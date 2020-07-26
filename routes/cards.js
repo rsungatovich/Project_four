@@ -7,8 +7,7 @@ const filepath = path.join(__dirname, '../data/cards.json');
 router.get('/', (req, res) => {
   fs.readFile(filepath, { encoding: 'utf8' })
     .then((data) => {
-      const cardsData = JSON.parse(data);
-      res.send(cardsData);
+      res.send(JSON.parse(data));
     })
     .catch((err) => {
       res.status(500).send(err);
