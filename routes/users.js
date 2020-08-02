@@ -11,7 +11,7 @@ const sendUsers = (req, res) => {
       res.send(JSON.parse(data));
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(500).send(err.message);
     });
 };
 
@@ -26,7 +26,7 @@ const sendUser = (req, res) => {
       res.status(404).send({ message: 'Нет пользователя с таким id' });
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(500).send(err.message);
     });
 };
 
