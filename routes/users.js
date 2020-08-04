@@ -17,12 +17,15 @@ const sendUsers = (req, res) => {
 
 const sendUser = (req, res) => {
   fs.readFile(filepath, { encoding: 'utf8' })
-    .then((data) => JSON.parse(data).find((user) => user._id === req.params.id))
     .then((data) => {
-      if (data) {
-        res.send(data);
+      const findUser = JSON.parse(data)
+        .find((user) => user._id === req.params.id);
+
+      if (findUser) {
+        res.send(findUser);
         return;
       }
+
       res.status(404).send({ message: 'Нет пользователя с таким id' });
     })
     .catch((err) => {
