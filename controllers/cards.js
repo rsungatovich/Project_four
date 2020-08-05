@@ -3,7 +3,7 @@ const Card = require('../models/card');
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ error: 'Не удалось получить данные' }));
+    .catch((err) => res.status(500).send(err.message));
 };
 
 const createCard = (req, res) => {
@@ -12,7 +12,7 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(400).send({ error: 'Карточка не создана' }));
+    .catch((err) => res.status(500).send(err.message));
 };
 
 const deleteCard = (req, res) => {
@@ -20,7 +20,7 @@ const deleteCard = (req, res) => {
     .then((сard) => {
       res.send({ data: сard });
     })
-    .catch(() => res.status(500).send({ error: 'Не удалось удалить данные' }));
+    .catch((err) => res.status(500).send(err.message));
 };
 
 module.exports = {

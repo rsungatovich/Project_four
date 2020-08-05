@@ -3,7 +3,7 @@ const User = require('../models/user');
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ error: 'Не удалось получить данные' }));
+    .catch((err) => res.status(500).send(err.message));
 };
 
 const findUser = (req, res) => {
@@ -11,7 +11,7 @@ const findUser = (req, res) => {
     .then((user) => {
       res.send({ data: user });
     })
-    .catch(() => res.status(404).send({ error: 'Пользователь не найден' }));
+    .catch((err) => res.status(500).send(err.message));
 };
 
 const createUser = (req, res) => {
@@ -19,7 +19,7 @@ const createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(400).send({ error: 'Пользователь не создан' }));
+    .catch((err) => res.status(500).send(err.message));
 };
 
 module.exports = {

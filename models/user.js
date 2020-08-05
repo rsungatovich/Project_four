@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-require('mongoose-type-url');
+
+const regexp = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -15,7 +16,11 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   avatar: {
-    type: mongoose.SchemaTypes.Url,
+    type: String,
+    validate: {
+      validator: (v) => regexp.test(v),
+      message: (props) => `${props.value} is not a valid!`,
+    },
     required: true,
   },
 });
