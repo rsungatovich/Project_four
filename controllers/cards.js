@@ -33,8 +33,42 @@ const deleteCard = (req, res) => {
     .catch((err) => res.status(500).send(err.message));
 };
 
+const addLikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.id,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+        return;
+      }
+      res.status(404).send({ message: 'Карточки больше нет' });
+    })
+    .catch((err) => res.status(500).send(err.message));
+};
+
+const deleteLikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.id,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+        return;
+      }
+      res.status(404).send({ message: 'Карточки больше нет' });
+    })
+    .catch((err) => res.status(500).send(err.message));
+};
+
 module.exports = {
   getCards,
   deleteCard,
   createCard,
+  addLikeCard,
+  deleteLikeCard,
 };

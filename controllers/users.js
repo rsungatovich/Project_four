@@ -32,8 +32,52 @@ const createUser = (req, res) => {
     .catch((err) => res.status(500).send(err.message));
 };
 
+const updateUserInfo = (req, res) => {
+  const { name, about } = req.body;
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+    },
+  )
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+        return;
+      }
+      res.status(404).send({ message: 'Пользователя не существует' });
+    })
+    .catch((err) => res.status(500).send(err.message));
+};
+
+const updateUserAvatar = (req, res) => {
+  const { avatar } = req.body;
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    {
+      new: true,
+      runValidators: true,
+    },
+  )
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+        return;
+      }
+      res.status(404).send({ message: 'Пользователя не существует' });
+    })
+    .catch((err) => res.status(500).send(err.message));
+};
+
 module.exports = {
   getUsers,
   findUser,
   createUser,
+  updateUserInfo,
+  updateUserAvatar,
 };
