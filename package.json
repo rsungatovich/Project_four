@@ -1,7 +1,7 @@
 {
   "name": "mesto_backend",
   "version": "0.0.2",
-  "description": "practical work 13",
+  "description": "practical work 12, 13, 14, 15",
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
