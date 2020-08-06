@@ -1,2 +1,1 @@
-# mesto_backend
-Practical work 12
+# Mesto backend
