@@ -9,7 +9,9 @@ const getUsers = (req, res) => {
       }
       res.status(404).send({ message: 'Пользователи не найдены' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const findUser = (req, res) => {
@@ -21,7 +23,9 @@ const findUser = (req, res) => {
       }
       res.status(404).send({ message: 'Пользователь не найден' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const createUser = (req, res) => {
@@ -29,7 +33,13 @@ const createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send(err.message));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Запрос неверно сформирован' });
+        return;
+      }
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const updateUserInfo = (req, res) => {
@@ -50,7 +60,13 @@ const updateUserInfo = (req, res) => {
       }
       res.status(404).send({ message: 'Пользователя не существует' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Запрос неверно сформирован' });
+        return;
+      }
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const updateUserAvatar = (req, res) => {
@@ -71,7 +87,13 @@ const updateUserAvatar = (req, res) => {
       }
       res.status(404).send({ message: 'Пользователя не существует' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Запрос неверно сформирован' });
+        return;
+      }
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 module.exports = {

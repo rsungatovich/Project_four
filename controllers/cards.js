@@ -2,6 +2,7 @@ const Card = require('../models/card');
 
 const getCards = (req, res) => {
   Card.find({})
+    .populate(['owner', 'likes'])
     .then((cards) => {
       if (cards.length) {
         res.send({ data: cards });
@@ -9,16 +10,23 @@ const getCards = (req, res) => {
       }
       res.status(404).send({ message: 'Карточки не найдены' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
 
-  Card.create({ name, link, owner })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send(err.message));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Запрос неверно сформирован' });
+        return;
+      }
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const deleteCard = (req, res) => {
@@ -30,7 +38,9 @@ const deleteCard = (req, res) => {
       }
       res.status(404).send({ message: 'Нет такой карточки' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const addLikeCard = (req, res) => {
@@ -39,6 +49,7 @@ const addLikeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .populate('likes')
     .then((card) => {
       if (card) {
         res.send({ data: card });
@@ -46,7 +57,9 @@ const addLikeCard = (req, res) => {
       }
       res.status(404).send({ message: 'Карточки больше нет' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const deleteLikeCard = (req, res) => {
@@ -55,6 +68,7 @@ const deleteLikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .populate('likes')
     .then((card) => {
       if (card) {
         res.send({ data: card });
@@ -62,7 +76,9 @@ const deleteLikeCard = (req, res) => {
       }
       res.status(404).send({ message: 'Карточки больше нет' });
     })
-    .catch((err) => res.status(500).send(err.message));
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 module.exports = {
