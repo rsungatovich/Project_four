@@ -2,7 +2,13 @@ const Card = require('../models/card');
 
 const getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.send({ data: cards }))
+    .then((cards) => {
+      if (cards.length) {
+        res.send({ data: cards });
+        return;
+      }
+      res.status(404).send({ message: 'Карточки не найдены' });
+    })
     .catch((err) => res.status(500).send(err.message));
 };
 
@@ -17,8 +23,12 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
-    .then((сard) => {
-      res.send({ data: сard });
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+        return;
+      }
+      res.status(404).send({ message: 'Нет такой карточки' });
     })
     .catch((err) => res.status(500).send(err.message));
 };
