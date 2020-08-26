@@ -1,16 +1,18 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const checkError = require('../helpers/checkError');
 
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       if (users.length) {
-        res.send({ data: users });
-        return;
+        return res.send({ data: users });
       }
-      res.status(404).send({ message: 'Пользователи не найдены' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
@@ -18,27 +20,38 @@ const findUser = (req, res) => {
   User.findById(req.params.id)
     .then((user) => {
       if (user) {
-        res.send({ data: user });
-        return;
+        return res.send({ data: user });
       }
-      res.status(404).send({ message: 'Пользователь не найден' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
 const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(201).send({ data: user }))
+  if (!password || password.length < 5 || !password.trim()) {
+    res.status(400).send({ message: 'Запрос неверно сформирован' });
+    return;
+  }
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => res.status(201).send({
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Запрос неверно сформирован' });
-        return;
-      }
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+      checkError(err, res);
     });
 };
 
@@ -55,17 +68,12 @@ const updateUserInfo = (req, res) => {
   )
     .then((user) => {
       if (user) {
-        res.send({ data: user });
-        return;
+        return res.send({ data: user });
       }
-      res.status(404).send({ message: 'Пользователя не существует' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Запрос неверно сформирован' });
-        return;
-      }
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+      checkError(err, res);
     });
 };
 
@@ -82,21 +90,35 @@ const updateUserAvatar = (req, res) => {
   )
     .then((user) => {
       if (user) {
-        res.send({ data: user });
-        return;
+        return res.send({ data: user });
       }
-      res.status(404).send({ message: 'Пользователя не существует' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Запрос неверно сформирован' });
-        return;
-      }
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+      checkError(err, res);
+    });
+};
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.userAuthentication(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' },
+      );
+      res.cookie('_id', token, { httpOnly: true });
+      res.end('Токен отправлен');
+    })
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
 module.exports = {
+  login,
   getUsers,
   findUser,
   createUser,
