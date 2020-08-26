@@ -1,17 +1,17 @@
 const Card = require('../models/card');
+const checkError = require('../helpers/checkError');
 
 const getCards = (req, res) => {
   Card.find({})
-    .populate(['owner', 'likes'])
+    .populate(['likes'])
     .then((cards) => {
       if (cards.length) {
-        res.send({ data: cards });
-        return;
+        return res.send({ data: cards });
       }
-      res.status(404).send({ message: 'Карточки не найдены' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
@@ -21,25 +21,24 @@ const createCard = (req, res) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Запрос неверно сформирован' });
-        return;
-      }
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+      checkError(err, res);
     });
 };
 
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.id)
+  Card.findById(req.params.id)
     .then((card) => {
-      if (card) {
-        res.send({ data: card });
-        return;
+      if (!card) {
+        return Promise.reject(new Error('Ничего не найдено'));
       }
-      res.status(404).send({ message: 'Нет такой карточки' });
+      if (card.owner.toString() !== req.user._id) {
+        return Promise.reject(new Error('Нет доступа к действию'));
+      }
+      card.remove();
+      return res.send({ data: card });
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
@@ -52,13 +51,12 @@ const addLikeCard = (req, res) => {
     .populate('likes')
     .then((card) => {
       if (card) {
-        res.send({ data: card });
-        return;
+        return res.send({ data: card });
       }
-      res.status(404).send({ message: 'Карточки больше нет' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
@@ -71,13 +69,12 @@ const deleteLikeCard = (req, res) => {
     .populate('likes')
     .then((card) => {
       if (card) {
-        res.send({ data: card });
-        return;
+        return res.send({ data: card });
       }
-      res.status(404).send({ message: 'Карточки больше нет' });
+      return Promise.reject(new Error('Ничего не найдено'));
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    .catch((err) => {
+      checkError(err, res);
     });
 };
 
