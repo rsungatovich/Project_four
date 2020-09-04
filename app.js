@@ -2,10 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const auth = require('./middlewares/auth');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
+const linkValidator = require('./helpers/linkValidator');
 const { login, createUser } = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
@@ -21,8 +23,22 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().trim().min(5).required(),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30).required(),
+    about: Joi.string().min(2).max(30).required(),
+    avatar: Joi.string().custom(linkValidator).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().trim().min(5).required(),
+  }),
+}), createUser);
 
 app.use(auth);
 
@@ -33,18 +49,20 @@ app.use('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
 
+app.use(errors());
+
 app.use((err, req, res, next) => {
-  if (err.name === 'ValidationError') {
-    res.status(400).send({ message: 'Запрос неверно сформирован' });
-    return;
-  }
+  let { statusCode = 500, message } = err;
 
   if (err.code === 11000) {
-    res.status(409).send({ message: 'Данные уже существуют' });
-    return;
+    statusCode = 409;
+    message = 'Данные уже существуют';
   }
 
-  const { statusCode = 500, message } = err;
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    message = 'Запрос неверно сформирован';
+  }
 
   res
     .status(statusCode)

@@ -30,11 +30,6 @@ const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!password || password.length < 5 || !password.trim()) {
-    res.status(400).send({ message: 'Запрос неверно сформирован' });
-    return;
-  }
-
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
