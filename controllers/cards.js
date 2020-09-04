@@ -1,48 +1,43 @@
 const Card = require('../models/card');
-const checkError = require('../helpers/checkError');
+const NotFoundError = require('../errors/NotFoundError');
+const NoAccessError = require('../errors/NoAccessError');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .populate(['likes'])
     .then((cards) => {
-      if (cards.length) {
-        return res.send({ data: cards });
+      if (!cards.length) {
+        throw new NotFoundError('Ничего не найдено');
       }
-      return Promise.reject(new Error('Ничего не найдено'));
+      return res.send({ data: cards });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(201).send({ data: card }))
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findById(req.params.id)
     .then((card) => {
       if (!card) {
-        return Promise.reject(new Error('Ничего не найдено'));
+        throw new NotFoundError('Ничего не найдено');
       }
       if (card.owner.toString() !== req.user._id) {
-        return Promise.reject(new Error('Нет доступа к действию'));
+        throw new NoAccessError('Нет доступа к действию');
       }
       card.remove();
       return res.send({ data: card });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const addLikeCard = (req, res) => {
+const addLikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.id,
     { $addToSet: { likes: req.user._id } },
@@ -50,17 +45,15 @@ const addLikeCard = (req, res) => {
   )
     .populate('likes')
     .then((card) => {
-      if (card) {
-        return res.send({ data: card });
+      if (!card) {
+        throw new NotFoundError('Ничего не найдено');
       }
-      return Promise.reject(new Error('Ничего не найдено'));
+      return res.send({ data: card });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const deleteLikeCard = (req, res) => {
+const deleteLikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.id,
     { $pull: { likes: req.user._id } },
@@ -68,14 +61,12 @@ const deleteLikeCard = (req, res) => {
   )
     .populate('likes')
     .then((card) => {
-      if (card) {
-        return res.send({ data: card });
+      if (!card) {
+        throw new NotFoundError('Ничего не найдено');
       }
-      return Promise.reject(new Error('Ничего не найдено'));
+      return res.send({ data: card });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
 module.exports = {
