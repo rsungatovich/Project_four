@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
     const token = req.cookies._id;
     payload = jwt.verify(
       token,
-      NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+      NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
     );
   } catch (err) {
     next(err);
