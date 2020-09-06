@@ -1,43 +1,32 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const checkError = require('../helpers/checkError');
+const NotFoundError = require('../errors/NotFoundError');
 
-const getUsers = (req, res) => {
+const { NODE_ENV, JWT_SECRET } = process.env;
+
+const getUsers = (req, res, next) => {
   User.find({})
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((users) => {
-      if (users.length) {
-        return res.send({ data: users });
-      }
-      return Promise.reject(new Error('Ничего не найдено'));
+      res.send({ data: users });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const findUser = (req, res) => {
+const findUser = (req, res, next) => {
   User.findById(req.params.id)
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((user) => {
-      if (user) {
-        return res.send({ data: user });
-      }
-      return Promise.reject(new Error('Ничего не найдено'));
+      res.send({ data: user });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
-  if (!password || password.length < 5 || !password.trim()) {
-    res.status(400).send({ message: 'Запрос неверно сформирован' });
-    return;
-  }
 
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
@@ -50,12 +39,10 @@ const createUser = (req, res) => {
       avatar: user.avatar,
       email: user.email,
     }))
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const updateUserInfo = (req, res) => {
+const updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(
@@ -66,18 +53,14 @@ const updateUserInfo = (req, res) => {
       runValidators: true,
     },
   )
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((user) => {
-      if (user) {
-        return res.send({ data: user });
-      }
-      return Promise.reject(new Error('Ничего не найдено'));
+      res.send({ data: user });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const updateUserAvatar = (req, res) => {
+const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -88,33 +71,27 @@ const updateUserAvatar = (req, res) => {
       runValidators: true,
     },
   )
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((user) => {
-      if (user) {
-        return res.send({ data: user });
-      }
-      return Promise.reject(new Error('Ничего не найдено'));
+      res.send({ data: user });
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.userAuthentication(email, password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        'some-secret-key',
+        NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
         { expiresIn: '7d' },
       );
-      res.cookie('_id', token, { httpOnly: true });
+      res.cookie('_id', token, { httpOnly: true, sameSite: true });
       res.end('Токен отправлен');
     })
-    .catch((err) => {
-      checkError(err, res);
-    });
+    .catch(next);
 };
 
 module.exports = {
