@@ -7,22 +7,18 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 
 const getUsers = (req, res, next) => {
   User.find({})
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((users) => {
-      if (!users.length) {
-        throw new NotFoundError('Ничего не найдено');
-      }
-      return res.send({ data: users });
+      res.send({ data: users });
     })
     .catch(next);
 };
 
 const findUser = (req, res, next) => {
   User.findById(req.params.id)
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Ничего не найдено');
-      }
-      return res.send({ data: user });
+      res.send({ data: user });
     })
     .catch(next);
 };
@@ -57,11 +53,9 @@ const updateUserInfo = (req, res, next) => {
       runValidators: true,
     },
   )
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Ничего не найдено');
-      }
-      return res.send({ data: user });
+      res.send({ data: user });
     })
     .catch(next);
 };
@@ -77,11 +71,9 @@ const updateUserAvatar = (req, res, next) => {
       runValidators: true,
     },
   )
+    .orFail(new NotFoundError('Ничего не найдено'))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Ничего не найдено');
-      }
-      return res.send({ data: user });
+      res.send({ data: user });
     })
     .catch(next);
 };
@@ -96,7 +88,7 @@ const login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
         { expiresIn: '7d' },
       );
-      res.cookie('_id', token, { httpOnly: true });
+      res.cookie('_id', token, { httpOnly: true, sameSite: true });
       res.end('Токен отправлен');
     })
     .catch(next);
