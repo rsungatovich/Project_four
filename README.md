@@ -12,7 +12,7 @@
 - REST API
 - Cookies and token
 
-## Domain adress:
+## Domain addresses:
 
 ### API
 api.chirikgaga.ga
