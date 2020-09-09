@@ -12,9 +12,22 @@
 - REST API
 - Cookies and token
 
+## Domain adress:
+
+### API
+api.chirikgaga.ga
+www.api.chirikgaga.ga
+
+### Статические файлы (отсутствуют)
+chirikgaga.ga
+www.chirikgaga.ga
+
+### Публичный IP
+http://84.201.179.76
+
 ## Запросы на сервер:
 
-#### Авторизация:
+### Авторизация:
 
 POST domain/signin
 
@@ -23,7 +36,7 @@ POST domain/signin
   password: min 5 symbols
 }
 
-#### Создать пользователя:
+### Создать пользователя:
 
 POST domain/signup
 
@@ -35,7 +48,7 @@ POST domain/signup
   password: min 5 symbols
 }
 
-#### Обновить данные пользователя:
+### Обновить данные пользователя:
 
 PATH domain/users/me
 
@@ -44,7 +57,7 @@ PATH domain/users/me
   about: min 2 max 30 symbols
 }
 
-#### Обновить аватар пользователя:
+### Обновить аватар пользователя:
 
 PATH domain/users/me/avatar
 
@@ -52,11 +65,11 @@ PATH domain/users/me/avatar
   avatar: correct link,
 }
 
-#### Получить всеx пользователей:
+### Получить всеx пользователей:
 
 Get domain/users
 
-#### Создать карточку:
+### Создать карточку:
 
 POST domain/cards
 
@@ -65,31 +78,20 @@ POST domain/cards
   link: correct link
 }
 
-#### Удалить карточку:
+### Удалить карточку:
 
 DELETE domain/cards/:id
 
-#### Получить все карточки:
+### Получить все карточки:
 
 GET domain/cards
 
-#### Поставить лайк карточке:
+### Поставить лайк карточке:
 
 PUT domain/cards/:id/likes
 
-#### Удалить лайк карточке:
+### Удалить лайк карточке:
 
 DELETE domain/cards/:id/likes
 
-## Запросы к API
-api.chirikgaga.ga
-www.api.chirikgaga.ga
-
-## Запросы к статическим файлам (отсутствуют)
-chirikgaga.ga
-www.chirikgaga.ga
-
-## Публичный IP
-http://84.201.179.76
-
-Все запросы сертифицированы протоколом https (кроме голого ip)
+##### Все запросы сертифицированы протоколом https (кроме голого ip)
